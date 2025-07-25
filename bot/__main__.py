@@ -18,7 +18,6 @@ from .thumb import getthumb
 from .logs import getlogs
 from .leech import dl_link
 from .speed import test
-from .callbacks import stats, skip  # Only if you have a separate callbacks.py
 
 LOGS.info("Starting...")
 
