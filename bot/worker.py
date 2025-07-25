@@ -1,7 +1,3 @@
-#    This file is part of the CompressorQueue distribution.
-#    Copyright (c) 2021 Danish_00
-#    Script Improved by Anshusharma
-
 from .FastTelethon import download_file, upload_file
 from .funcn import *
 from .config import *
@@ -19,16 +15,15 @@ async def stats(e):
         await e.answer(ans, cache_time=0, alert=True)
     except Exception as er:
         LOGS.info(er)
-        await e.answer(
-            "Someting Went Wrong.\nSend Media Again.", cache_time=0, alert=True
-        )
+        await e.answer("Someting Went Wrong.\nSend Media Again.", cache_time=0, alert=True)
 
 
 async def dl_link(event):
     if not event.is_private:
         return
-    if str(event.sender_id) not in OWNER and event.sender_id !=DEV:
-        return
+    if not is_authorized(event.sender_id):
+        return await event.reply("**Sorry You're not An Authorised User!**")
+
     link, name = "", ""
     try:
         link = event.text.split()[1]
@@ -40,6 +35,7 @@ async def dl_link(event):
     if WORKING or QUEUE:
         QUEUE.update({link: name})
         return await event.reply(f"** Added {link} in QUEUE**")
+
     WORKING.append(1)
     s = dt.now()
     xxx = await event.reply("** Downloading...**")
@@ -114,28 +110,22 @@ async def dl_link(event):
     WORKING.clear()
 
 
-
-
-
 async def encod(event):
     try:
         if not event.is_private:
             return
-        event.sender
-        if str(event.sender_id) not in OWNER and event.sender_id !=DEV:
+        if not is_authorized(event.sender_id):
             return await event.reply("**Sorry You're not An Authorised User!**")
+
         if not event.media:
             return
         if hasattr(event.media, "document"):
-            if not event.media.document.mime_type.startswith(
-                ("video", "application/octet-stream")
-            ):
+            if not event.media.document.mime_type.startswith(("video", "application/octet-stream")):
                 return
         else:
             return
         if WORKING or QUEUE:
             xxx = await event.reply("**Adding To Queue...**")
-            # id = pack_bot_file_id(event.media)
             doc = event.media.document
             if doc.id in list(QUEUE.keys()):
                 return await xxx.edit("**This File is Already Added in Queue**")
@@ -143,9 +133,8 @@ async def encod(event):
             if not name:
                 name = "video_" + dt.now().isoformat("_", "seconds") + ".mp4"
             QUEUE.update({doc.id: [name, doc]})
-            return await xxx.edit(
-                "**Added This File in Queue**"
-            )
+            return await xxx.edit("**Added This File in Queue**")
+
         WORKING.append(1)
         xxx = await event.reply("** Downloading...**")
         s = dt.now()
@@ -164,13 +153,7 @@ async def encod(event):
                         location=file,
                         out=f,
                         progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
-                            progress(
-                                d,
-                                t,
-                                xxx,
-                                ttt,
-                                f"** Downloading**\n__{filename}__",
-                            )
+                            progress(d, t, xxx, ttt, f"** Downloading**\n__{filename}__")
                         ),
                     )
             else:
