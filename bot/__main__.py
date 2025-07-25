@@ -264,3 +264,14 @@ LOGS.info("Bot has started.")
 with bot:
     bot.loop.run_until_complete(something())
     bot.loop.run_forever()
+    
+@bot.on(events.NewMessage(pattern="/mode"))
+async def _(e):
+    global IS_PUBLIC
+    if str(e.sender_id) not in OWNER and e.sender_id != DEV:
+        return await e.reply("🚫 You are not allowed to use this command.")
+
+    IS_PUBLIC = not IS_PUBLIC
+    save_mode(IS_PUBLIC)
+    mode = "🌍 Public (All users allowed)" if IS_PUBLIC else "🔒 Private (Only OWNER/DEV)"
+    await e.reply(f"✅ Mode changed successfully.\n\n**Current Mode:** {mode}")
