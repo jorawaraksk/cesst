@@ -20,3 +20,6 @@ IS_PUBLIC = load_mode()
 
 def is_authorized(user_id):
     return IS_PUBLIC or str(user_id) in OWNER or user_id == DEV
+
+def is_owner(user_id):
+    return str(user_id) in OWNER or user_id == DEV
