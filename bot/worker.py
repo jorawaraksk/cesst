@@ -1,7 +1,18 @@
+import os
+import time
+import asyncio
+import logging
+from pathlib import Path
+from telethon import Button
+
 from .FastTelethon import download_file, upload_file
 from .funcn import *
 from .config import *
 
+# ✅ Fixes for your reported errors
+LOGS = logging.getLogger("bot")
+WORKING = []
+QUEUE = {}
 
 async def stats(e):
     try:
@@ -10,13 +21,12 @@ async def stats(e):
         out, dl, id = wh.split(";")
         ot = hbs(int(Path(out).stat().st_size))
         ov = hbs(int(Path(dl).stat().st_size))
-        processing_file_name = dl.replace(f"downloads/", "").replace(f"_", " ")
+        processing_file_name = dl.replace("downloads/", "").replace("_", " ")
         ans = f"Processing Media:\n{processing_file_name}\n\nDownloaded:\n{ov}\n\nCompressed:\n{ot}"
         await e.answer(ans, cache_time=0, alert=True)
     except Exception as er:
         LOGS.info(er)
         await e.answer("Someting Went Wrong.\nSend Media Again.", cache_time=0, alert=True)
-
 
 async def dl_link(event):
     if not event.is_private:
@@ -48,7 +58,7 @@ async def dl_link(event):
     es = dt.now()
     kk = dl.split("/")[-1]
     aa = kk.split(".")[-1]
-    newFile = dl.replace(f"downloads/", "").replace(f"_", " ")
+    newFile = dl.replace("downloads/", "").replace("_", " ")
     rr = "encode"
     bb = kk.replace(f".{aa}", ".mkv")
     out = f"{rr}/{bb}"
@@ -94,7 +104,7 @@ async def dl_link(event):
     org = int(Path(dl).stat().st_size)
     com = int(Path(out).stat().st_size)
     pe = 100 - ((com / org) * 100)
-    per = str(f"{pe:.2f}") + "%"
+    per = f"{pe:.2f}%"
     eees = dt.now()
     x = dtime
     xx = ts(int((ees - es).seconds) * 1000)
@@ -102,13 +112,13 @@ async def dl_link(event):
     a1 = await info(dl, xxx)
     a2 = await info(out, xxx)
     dk = f"<b>File Name:</b> {newFile}\n\n<b>Original File Size:</b> {hbs(org)}\n<b>Encoded File Size:</b> {hbs(com)}\n<b>Encoded Percentage:</b> {per}\n\n<b>Get Mediainfo Here:</b> <a href='{a1}'>Before</a>/<a href='{a2}'>After</a>\n\n<i>Downloaded in {x}\nEncoded in {xx}\nUploaded in {xxx}</i>"
-    ds = await e.client.send_file(
-        e.chat_id, file=ok, force_document=True, caption=dk, link_preview=False, thumb=thum, parse_mode="html"
+    await event.client.send_file(
+        event.chat_id, file=ok, force_document=True, caption=dk,
+        link_preview=False, thumb=thum, parse_mode="html"
     )
     os.remove(dl)
     os.remove(out)
     WORKING.clear()
-
 
 async def encod(event):
     try:
@@ -139,7 +149,7 @@ async def encod(event):
         xxx = await event.reply("** Downloading...**")
         s = dt.now()
         ttt = time.time()
-        dir = f"downloads/"
+        dir = "downloads/"
         try:
             if hasattr(event.media, "document"):
                 file = event.media.document
@@ -148,7 +158,7 @@ async def encod(event):
                     filename = "video_" + dt.now().isoformat("_", "seconds") + ".mp4"
                 dl = dir + filename
                 with open(dl, "wb") as f:
-                    ok = await download_file(
+                    await download_file(
                         client=event.client,
                         location=file,
                         out=f,
@@ -171,16 +181,15 @@ async def encod(event):
         es = dt.now()
         kk = dl.split("/")[-1]
         aa = kk.split(".")[-1]
-        rr = f"encode"
+        rr = "encode"
         bb = kk.replace(f".{aa}", ".mkv")
-        newFile = dl.replace(f"downloads/", "").replace(f"_", " ")
+        newFile = dl.replace("downloads/", "").replace("_", " ")
         out = f"{rr}/{bb}"
         thum = "thumb.jpg"
         dtime = ts(int((es - s).seconds) * 1000)
-        e = xxx
         hehe = f"{out};{dl};0"
         wah = code(hehe)
-        nn = await e.edit(
+        nn = await xxx.edit(
             "**🗜 Compressing...**",
             buttons=[
                 [Button.inline("STATS", data=f"stats{wah}")],
@@ -195,7 +204,7 @@ async def encod(event):
         er = stderr.decode()
         try:
             if er:
-                await e.edit(str(er) + "\n\n**ERROR**")
+                await xxx.edit(str(er) + "\n\n**ERROR**")
                 WORKING.clear()
                 os.remove(dl)
                 return os.remove(out)
@@ -204,30 +213,31 @@ async def encod(event):
         ees = dt.now()
         ttt = time.time()
         await nn.delete()
-        nnn = await e.client.send_message(e.chat_id, "** Uploading...**")
+        nnn = await event.client.send_message(event.chat_id, "** Uploading...**")
         with open(out, "rb") as f:
             ok = await upload_file(
-                client=e.client,
+                client=event.client,
                 file=f,
                 name=out,
                 progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
-                    progress(d, t, nnn, ttt, f"** Uploading**\n__{out.replace(f'encode/', '')}__")
+                    progress(d, t, nnn, ttt, f"** Uploading**\n__{out.replace('encode/', '')}__")
                 ),
             )
         await nnn.delete()
         org = int(Path(dl).stat().st_size)
         com = int(Path(out).stat().st_size)
         pe = 100 - ((com / org) * 100)
-        per = str(f"{pe:.2f}") + "%"
+        per = f"{pe:.2f}%"
         eees = dt.now()
         x = dtime
         xx = ts(int((ees - es).seconds) * 1000)
         xxx = ts(int((eees - ees).seconds) * 1000)
-        a1 = await info(dl, e)
-        a2 = await info(out, e)
+        a1 = await info(dl, event)
+        a2 = await info(out, event)
         dk = f"<b>File Name:</b> {newFile}\n\n<b>Original File Size:</b> {hbs(org)}\n<b>Encoded File Size:</b> {hbs(com)}\n<b>Encoded Percentage:</b> {per}\n\n<b>Get Mediainfo Here:</b> <a href='{a1}'>Before</a>/<a href='{a2}'>After</a>\n\n<i>Downloaded in {x}\nEncoded in {xx}\nUploaded in {xxx}</i>"
-        ds = await e.client.send_file(
-            e.chat_id, file=ok, force_document=True, caption=dk, link_preview=False, thumb=thum, parse_mode="html"
+        await event.client.send_file(
+            event.chat_id, file=ok, force_document=True, caption=dk,
+            link_preview=False, thumb=thum, parse_mode="html"
         )
         os.remove(dl)
         os.remove(out)
