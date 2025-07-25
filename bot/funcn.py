@@ -1,4 +1,5 @@
 import json
+from .config import *
 from .config import OWNER, DEV
 from pathlib import Path
 
