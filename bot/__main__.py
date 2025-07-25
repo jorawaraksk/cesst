@@ -1,9 +1,24 @@
+import os
+import re
+from telethon import events, Button
+
+# Internal modules
 from . import *
-from .config import *
-from .worker import *
-from .devtools import *
-from .FastTelethon import *
+from .config import BOT_TOKEN
+from .worker import bot, LOGS
+from .devtools import eval, bash
+from .FastTelethon import encod
 from .funcn import is_authorized, is_owner, save_mode, IS_PUBLIC
+
+# Commands
+from .stuff import start, zylern, up, ihelp, help as help_cb
+from .ffmpeg_cmds import coding, getcode
+from .system import sysinfo, clearqueue, renew
+from .thumb import getthumb
+from .logs import getlogs
+from .leech import dl_link
+from .speed import test
+from .callbacks import stats, skip  # Only if you have a separate callbacks.py
 
 LOGS.info("Starting...")
 
@@ -114,7 +129,7 @@ async def _(e):
 
 @bot.on(events.callbackquery.CallbackQuery(data=re.compile("help")))
 async def _(e):
-    await help(e)
+    await help_cb(e)
 
 ########## THUMBNAIL SETTER ##########
 
