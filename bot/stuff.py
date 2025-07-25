@@ -1,5 +1,5 @@
 # https://github.com/1Danish-00/CompressorQueue/blob/main/License> .
-
+from telethon.tl.custom import Button
 from .worker import *
 from datetime import datetime
 
