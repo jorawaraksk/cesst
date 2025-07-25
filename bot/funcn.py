@@ -1,4 +1,5 @@
 import json
+from .config import OWNER, DEV
 from pathlib import Path
 
 MODE_FILE = Path("mode.json")
@@ -22,4 +23,4 @@ def is_authorized(user_id):
     return IS_PUBLIC or str(user_id) in OWNER or user_id == DEV
 
 def is_owner(user_id):
-    return str(user_id) in OWNER or user_id == DEV
+    return str(user_id) in [str(OWNER), str(DEV)]
