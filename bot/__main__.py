@@ -1,12 +1,17 @@
 import os
 import re
-from telethon import events, Button
+import logging
+from telethon import TelegramClient, events, Button
+
+# Configs
+from .config import API_ID, API_HASH, BOT_TOKEN
+
+# Bot instance
+bot = TelegramClient("bot", API_ID, API_HASH)
+LOGS = logging.getLogger("bot")
 
 # Internal modules
 from . import *
-import logging
-LOGS = logging.getLogger("bot")
-from .worker import bot, LOGS
 from .devtools import eval, bash
 from .FastTelethon import encod
 from .funcn import is_authorized, is_owner, save_mode, IS_PUBLIC
@@ -19,6 +24,7 @@ from .thumb import getthumb
 from .logs import getlogs
 from .leech import dl_link
 from .speed import test
+from .callbacks import stats, skip  # Optional — only if you have this file
 
 LOGS.info("Starting...")
 
