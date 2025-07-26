@@ -11,7 +11,7 @@ from .devtools import eval, bash
 from .FastTelethon import *
 from .funcn import is_authorized, is_owner, save_mode, IS_PUBLIC
 from .stuff import start, zylern, up, ihelp, help as help_cb
-from .ffmpeg_cmds import coding, getcode
+from .stuff import coding, getcode
 from .system import sysinfo, clearqueue, renew
 from .thumb import getthumb
 from .logs import getlogs
