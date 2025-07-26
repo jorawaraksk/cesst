@@ -4,7 +4,8 @@ from telethon import events, Button
 
 # Internal modules
 from . import *
-from .config import BOT_TOKEN
+import logging
+LOGS = logging.getLogger("bot")
 from .worker import bot, LOGS
 from .devtools import eval, bash
 from .FastTelethon import encod
