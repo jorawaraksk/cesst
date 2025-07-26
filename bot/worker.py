@@ -1,4 +1,5 @@
 from .FastTelethon import download_file, upload_file
+import logging
 from .funcn import *
 from .config import *
 from telethon.tl.custom import Button
