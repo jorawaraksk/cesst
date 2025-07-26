@@ -2,6 +2,7 @@ import os
 import re
 import logging
 import asyncio
+import uuid
 from telethon import TelegramClient, events, Button
 from telethon.sessions import StringSession
 
@@ -170,12 +171,14 @@ async def handle_upload(e):
     if not input_path:
         return await e.reply("❌ Failed to download the video.")
 
-    file_name = os.path.basename(input_path)
-    if not file_name:
-        file_name = f"input_{e.sender_id}.mp4"
+    # ✅ Rename with safe ASCII-only name
+    safe_input = f"downloads/{uuid.uuid4().hex}.mp4"
+    os.rename(input_path, safe_input)
+    input_path = safe_input
 
-    output_path = f"encode/{file_name.rsplit('.', 1)[0]}.mkv"
+    output_path = f"encode/{uuid.uuid4().hex}.mkv"
 
+    # 🗜 FFmpeg compression
     cmd = f"""ffmpeg -i "{input_path}" -preset faster -c:v libx265 -s 1280x720 "{output_path}" -y"""
     process = await asyncio.create_subprocess_shell(cmd)
     await process.communicate()
