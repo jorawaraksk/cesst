@@ -9,6 +9,8 @@ import time
 import asyncio
 
 LOGS = logging.getLogger("worker")
+QUEUE = {}
+WORKING = []
 
 
 async def stats(e):
