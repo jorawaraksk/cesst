@@ -1,10 +1,10 @@
 import os
 import re
 import logging
+import asyncio
 from telethon import TelegramClient, events, Button
 from telethon.sessions import StringSession
 
-# Internal modules
 from .config import API_ID, API_HASH, BOT_TOKEN
 from .worker import stats, skip
 from .devtools import eval, bash
@@ -17,12 +17,10 @@ from .thumb import getthumb
 from .logs import getlogs
 from .worker import dl_link
 from .speed import test
-from .worker import encod
 
 LOGS = logging.getLogger("bot")
 LOGS.setLevel(logging.INFO)
 
-# Initialize bot with safe session handling
 LOGS.info("Starting...")
 
 try:
@@ -145,23 +143,55 @@ async def _(e):
 async def _(e):
     await help_cb(e)
 
-########## THUMBNAIL SETTER ##########
+########## FILE + THUMB HANDLER ##########
 
 @bot.on(events.NewMessage(incoming=True))
-async def _(event):
-    if not is_owner(event.sender_id):
-        return await event.reply("**Only OWNER can set thumbnail.**")
-    if not event.photo:
+async def handle_upload(e):
+    if e.photo:
+        if is_owner(e.sender_id):
+            os.system("rm thumb.jpg")
+            await e.client.download_media(e.media, file="thumb.jpg")
+            return await e.reply("**Thumbnail Saved Successfully.**")
         return
-    os.system("rm thumb.jpg")
-    await event.client.download_media(event.media, file="/bot/thumb.jpg")
-    await event.reply("**Thumbnail Saved Successfully.**")
 
-########## FILE HANDLER ##########
+    if not e.video:
+        return
 
-@bot.on(events.NewMessage(incoming=True))
-async def _(e):
-    await encod(e)
+    if not IS_PUBLIC and not is_owner(e.sender_id):
+        return await e.reply("🚫 Bot is in private mode.")
+
+    await e.reply("📥 Received video. Starting compression...")
+
+    input_path = await e.download_media(file="downloads/")
+    file_name = os.path.basename(input_path)
+    output_path = f"encode/{file_name.rsplit('.', 1)[0]}.mkv"
+
+    # 🗜 FFmpeg compression
+    cmd = f"""ffmpeg -i "{input_path}" -preset faster -c:v libx265 -s 1280x720 "{output_path}" -y"""
+    process = await asyncio.create_subprocess_shell(cmd)
+    await process.communicate()
+
+    # 📤 Upload with progress
+    progress_msg = await e.reply("📤 Uploading... 0%")
+    start_time = asyncio.get_event_loop().time()
+
+    async def progress(current, total):
+        percent = current * 100 / total
+        try:
+            await progress_msg.edit(f"📤 Uploading... {percent:.2f}%")
+        except:
+            pass
+
+    await e.client.send_file(
+        e.chat_id,
+        output_path,
+        force_document=True,
+        thumb="thumb.jpg" if os.path.exists("thumb.jpg") else None,
+        progress_callback=progress
+    )
+
+    os.remove(input_path)
+    os.remove(output_path)
 
 ########## TOGGLE PUBLIC/PRIVATE ##########
 
