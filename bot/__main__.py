@@ -39,6 +39,9 @@ except Exception as er:
     LOGS.error(f"Bot start failed: {er}")
     raise
 
+os.makedirs("downloads", exist_ok=True)
+os.makedirs("encode", exist_ok=True)
+
 ########## COMMANDS ##########
 
 @bot.on(events.NewMessage(pattern="/start"))
@@ -69,7 +72,8 @@ async def _(e):
 async def _(e):
     if not is_owner(e.sender_id):
         return await e.reply("🚫 You are not allowed to access logs.")
-    await getlogs(e)
+    logs = getlogs()
+    await e.reply(f"🧾 Logs:\n\n{logs[-4000:]}" if logs else "❌ No logs found.")
 
 @bot.on(events.NewMessage(pattern="/cmds"))
 async def _(e):
@@ -163,15 +167,22 @@ async def handle_upload(e):
     await e.reply("📥 Received video. Starting compression...")
 
     input_path = await e.download_media(file="downloads/")
+    if not input_path:
+        return await e.reply("❌ Failed to download the video.")
+
     file_name = os.path.basename(input_path)
+    if not file_name:
+        file_name = f"input_{e.sender_id}.mp4"
+
     output_path = f"encode/{file_name.rsplit('.', 1)[0]}.mkv"
 
-    # 🗜 FFmpeg compression
     cmd = f"""ffmpeg -i "{input_path}" -preset faster -c:v libx265 -s 1280x720 "{output_path}" -y"""
     process = await asyncio.create_subprocess_shell(cmd)
     await process.communicate()
 
-    # 📤 Upload with progress
+    if not os.path.exists(output_path):
+        return await e.reply("❌ Compression failed. Output file not found.")
+
     progress_msg = await e.reply("📤 Uploading... 0%")
     start_time = asyncio.get_event_loop().time()
 
