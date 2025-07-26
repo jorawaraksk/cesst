@@ -2,21 +2,14 @@ import os
 import re
 import logging
 from telethon import TelegramClient, events, Button
-
-# Configs
-from .config import API_ID, API_HASH, BOT_TOKEN
-
-# Bot instance
-bot = TelegramClient("bot", API_ID, API_HASH)
-LOGS = logging.getLogger("bot")
+from telethon.sessions import StringSession
 
 # Internal modules
-from . import *
+from .config import API_ID, API_HASH, BOT_TOKEN
+from .worker import stats, skip
 from .devtools import eval, bash
-from .worker import encod
+from .FastTelethon import *
 from .funcn import is_authorized, is_owner, save_mode, IS_PUBLIC
-
-# Commands
 from .stuff import start, zylern, up, ihelp, help as help_cb
 from .ffmpeg_cmds import coding, getcode
 from .system import sysinfo, clearqueue, renew
@@ -24,14 +17,29 @@ from .thumb import getthumb
 from .logs import getlogs
 from .leech import dl_link
 from .speed import test
-from .callbacks import stats, skip  # Optional — only if you have this file
+from .worker import encod
 
+LOGS = logging.getLogger("bot")
+LOGS.setLevel(logging.INFO)
+
+# Initialize bot with safe session handling
 LOGS.info("Starting...")
+
+try:
+    bot = TelegramClient("bot", API_ID, API_HASH)
+except Exception as e:
+    LOGS.error("Session init failed. Deleting old session file.")
+    try:
+        os.remove("bot.session")
+    except FileNotFoundError:
+        LOGS.warning("No session file found to delete.")
+    bot = TelegramClient("bot", API_ID, API_HASH)
 
 try:
     bot.start(bot_token=BOT_TOKEN)
 except Exception as er:
-    LOGS.info(er)
+    LOGS.error(f"Bot start failed: {er}")
+    raise
 
 ########## COMMANDS ##########
 
