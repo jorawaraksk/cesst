@@ -13,7 +13,7 @@ LOGS = logging.getLogger("bot")
 # Internal modules
 from . import *
 from .devtools import eval, bash
-from .FastTelethon import encod
+from .worker import encod
 from .funcn import is_authorized, is_owner, save_mode, IS_PUBLIC
 
 # Commands
