@@ -8,3 +8,4 @@ psutil
 pymediainfo
 tgcrypto
 Flask>=2.0
+speedtest-cli
