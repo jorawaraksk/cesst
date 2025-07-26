@@ -15,7 +15,7 @@ from .stuff import coding, getcode
 from .system import sysinfo, clearqueue, renew
 from .thumb import getthumb
 from .logs import getlogs
-from .leech import dl_link
+from .worker import dl_link
 from .speed import test
 from .worker import encod
 
